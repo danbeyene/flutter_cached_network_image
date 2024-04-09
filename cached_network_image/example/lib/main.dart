@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:baseflow_plugin_template/baseflow_plugin_template.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -108,13 +106,6 @@ class BasicContent extends StatelessWidget {
                 placeholder: (context, url) =>
                     const CircularProgressIndicator(),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
-                errorListener: (e) {
-                  if (e is SocketException) {
-                    print('Error with ${e.address} and message ${e.message}');
-                  } else {
-                    print('Image Exception is: ${e.runtimeType}');
-                  }
-                },
               ),
             ),
             _sizedContainer(

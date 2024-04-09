@@ -7,7 +7,7 @@ import 'dart:ui' as ui;
 
 import 'package:cached_network_image_platform_interface'
         '/cached_network_image_platform_interface.dart' as platform
-    show ImageLoader, ImageRenderMethodForWeb;
+    show ImageLoader, ErrorListener, ImageRenderMethodForWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
@@ -24,6 +24,7 @@ class ImageLoader implements platform.ImageLoader {
     int? maxHeight,
     int? maxWidth,
     Map<String, String>? headers,
+    VoidCallback? errorListener,
     platform.ImageRenderMethodForWeb imageRenderMethodForWeb,
     VoidCallback evictImage,
   ) {
@@ -39,6 +40,7 @@ class ImageLoader implements platform.ImageLoader {
       maxHeight,
       maxWidth,
       headers,
+      (_) {},
       imageRenderMethodForWeb,
       evictImage,
     );
@@ -54,6 +56,7 @@ class ImageLoader implements platform.ImageLoader {
     int? maxHeight,
     int? maxWidth,
     Map<String, String>? headers,
+    ValueChanged<Object>? errorListener,
     platform.ImageRenderMethodForWeb imageRenderMethodForWeb,
     VoidCallback evictImage,
   ) {
@@ -69,6 +72,7 @@ class ImageLoader implements platform.ImageLoader {
       maxHeight,
       maxWidth,
       headers,
+      errorListener,
       imageRenderMethodForWeb,
       evictImage,
     );
@@ -83,6 +87,7 @@ class ImageLoader implements platform.ImageLoader {
     int? maxHeight,
     int? maxWidth,
     Map<String, String>? headers,
+    platform.ErrorListener? errorListener,
     platform.ImageRenderMethodForWeb imageRenderMethodForWeb,
     VoidCallback evictImage,
   ) {
@@ -97,6 +102,7 @@ class ImageLoader implements platform.ImageLoader {
           maxHeight,
           maxWidth,
           headers,
+          errorListener,
           evictImage,
         );
       case platform.ImageRenderMethodForWeb.HtmlImage:
@@ -113,6 +119,7 @@ class ImageLoader implements platform.ImageLoader {
     int? maxHeight,
     int? maxWidth,
     Map<String, String>? headers,
+    platform.ErrorListener? errorListener,
     VoidCallback evictImage,
   ) async* {
     try {
@@ -137,13 +144,14 @@ class ImageLoader implements platform.ImageLoader {
           yield decoded;
         }
       }
-    } on Object {
+    } on Object catch (e) {
       // Depending on where the exception was thrown, the image cache may not
       // have had a chance to track the key in the cache at all.
       // Schedule a microtask to give the cache a chance to add the key.
       scheduleMicrotask(() {
         evictImage();
       });
+      errorListener?.call(e);
       rethrow;
     }
     await chunkEvents.close();
